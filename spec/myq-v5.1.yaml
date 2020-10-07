@@ -1,0 +1,432 @@
+openapi: 3.0.0
+servers:
+  - url: 'https://api.myqdevice.com/api'
+    description: MyQ Server
+
+info:
+  description: This is a reverse engineered and incomplete version of the MyQ API.  
+  version: "5.1"
+  title: API for MyQ Devices
+  contact:
+    email: geregam@gmail.com
+  license:
+    name: MIT
+    url: 'https://opensource.org/licenses/MIT'
+tags:
+  - name: authentication
+    description: Authentication calls
+  - name: account
+    description: Account Actions
+  - name: country
+    description: Country Actions
+paths:
+  "/{apiVersion}/Login":
+    post:
+      tags:
+        - authentication
+      summary: log in to the service and receive a token
+      operationId: login
+      description: |
+        Authenticate with the MyQ service and receive a security token
+      parameters:
+        - $ref: '#/components/parameters/apiVersion'
+        - $ref: '#/components/parameters/ApplicationIdHeader'
+        - $ref: '#/components/parameters/BrandIdHeader'
+        - $ref: '#/components/parameters/CultureHeader'
+      responses:
+        '200':
+          description: Login Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: 'invalid login attempt'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+        description: Login Details
+  "/{apiVersion}/Accounts":
+    get:
+      tags:
+        - account
+      summary: retrieve a list of accounts for the current user
+      operationId: getAccounts
+      description: |
+        Retrieve a list of accounts for the current user
+      parameters:
+        - $ref: '#/components/parameters/apiVersion'
+        - $ref: '#/components/parameters/ApplicationIdHeader'
+        - $ref: '#/components/parameters/BrandIdHeader'
+        - $ref: '#/components/parameters/CultureHeader'
+        - $ref: '#/components/parameters/SecurityTokenHeader'
+      responses:
+        '200':
+          description: Retrieval Succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
+        '401':
+          description: 'invalid account retrieval'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  "/{apiVersion}/Accounts/{id}":
+    get:
+      tags:
+        - account
+      summary: Retrieve the Account by the ID
+      operationId: getAccountById
+      description: |
+        Retrieve the Account by ID
+      parameters:
+        - $ref: '#/components/parameters/apiVersion'
+        - $ref: '#/components/parameters/ApplicationIdHeader'
+        - $ref: '#/components/parameters/BrandIdHeader'
+        - $ref: '#/components/parameters/CultureHeader'
+        - $ref: '#/components/parameters/SecurityTokenHeader'
+        - name: id
+          in: path
+          description: The ID of the account to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Retrieval Succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '401':
+          description: 'invalid account retrieval'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  "/{apiVersion}/Accounts/{id}/Devices":
+    get:
+      tags:
+        - account
+      summary: Retrieve the Devices for a specific account
+      operationId: getDevicesByAccountId
+      description: |
+        Retrieve the Devices for a specific account
+      parameters:
+        - $ref: '#/components/parameters/apiVersion'
+        - $ref: '#/components/parameters/ApplicationIdHeader'
+        - $ref: '#/components/parameters/BrandIdHeader'
+        - $ref: '#/components/parameters/CultureHeader'
+        - $ref: '#/components/parameters/SecurityTokenHeader'
+        - name: id
+          in: path
+          description: The ID of the account to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Retrieval Succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicesResponse'
+        '401':
+          description: 'invalid account retrieval'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  "/{apiVersion}/Countries":
+    get:
+      tags:
+        - country
+      summary: retrieve a list of countries for the current user
+      operationId: getCountries
+      description: |
+        Retrieve a list of countries for the current user
+      parameters:
+        - $ref: '#/components/parameters/apiVersion'
+        - $ref: '#/components/parameters/ApplicationIdHeader'
+        - $ref: '#/components/parameters/BrandIdHeader'
+        - $ref: '#/components/parameters/CultureHeader'
+        - $ref: '#/components/parameters/SecurityTokenHeader'
+      responses:
+        '200':
+          description: Retrieval Succeeded
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+        '401':
+          description: 'invalid account retrieval'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  "/{apiVersion}/Countries/{countryCode}":
+    get:
+      tags:
+        - country
+      summary: retrieve the specific country for the given code
+      operationId: getCountryByCode
+      description: |
+        Retrieve the specific country for the given code
+      parameters:
+        - $ref: '#/components/parameters/apiVersion'
+        - $ref: '#/components/parameters/ApplicationIdHeader'
+        - $ref: '#/components/parameters/BrandIdHeader'
+        - $ref: '#/components/parameters/CultureHeader'
+        - $ref: '#/components/parameters/SecurityTokenHeader'
+        - name: countryCode
+          in: path
+          description: The country code to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Retrieval Succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Country'
+        '401':
+          description: 'Authentication Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: 'invalid retrieval'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      
+components:
+  parameters:
+    apiVersion:
+      name: apiVersion
+      in: path
+      required: true
+      description: | 
+        For right now, this should be v5 except for the Accounts/{id}/Devices, which is v5.1
+      schema:
+        type: string
+        default: "v5"
+    ApplicationIdHeader:
+      name: MyQApplicationId
+      in: header
+      schema:
+        type: string
+        default: JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu
+    BrandIdHeader:
+      name: BrandId
+      in: header
+      example: "2"
+      schema:
+        type: string
+        default: "2"
+    CultureHeader:
+      name: Culture
+      in: header
+      example: "en"
+      schema:
+        type: string
+        default: "en"
+    SecurityTokenHeader:
+      name: SecurityToken
+      in: header
+      schema:
+        type: string
+  schemas:
+    ErrorResponse:
+      type: object
+      required: 
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        description:
+          type: string
+    LoginBody:
+      type: object
+      required: 
+        - Username
+        - Password
+      properties:
+        Username:
+          type: string
+          example: your@email.com
+        Password:
+          type: string
+          example: yourPassword
+    LoginResponse:
+      type: object
+      properties:
+        SecurityToken:
+          type: string
+    AccountsResponse:
+      type: object
+      properties:
+        href:
+          type: string
+        Count:
+          type: number
+        Items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+    DevicesResponse:
+      type: object
+      properties:
+        href:
+          type: string
+        count:
+          type: number
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+    
+    Account:
+      type: object
+      properties:
+        href:
+          type: string
+        Id:
+          type: string
+          format: UUID
+        Name:
+          type: string
+        Email:
+          type: string
+        ContactName:
+          type: string
+        DirectoryCodeLength:
+          type: number
+        UserAllowance:
+          type: number
+        TimeZone:
+          type: string
+        Address:
+          $ref: '#/components/schemas/Address'
+    Device:
+      type: object
+      properties:
+        href:
+          type: string
+        serial_number:
+          type: string
+        device_family:
+          type: string
+        device_platform:
+          type: string
+        device_type:
+          type: string
+        name:
+          type: string
+        parent_device:
+          type: string
+        parent_device_id:
+          type: string
+        created_date:
+          type: string
+          format: DateTime
+        state:
+          $ref: '#/components/schemas/DeviceState'
+          
+    DeviceState:
+      type: object
+      properties:
+        gdo_lock_connected: 
+          type: boolean
+        attached_work_light_error_present:
+          type: boolean
+        door_state:
+          type: string
+          enum:
+            - closed
+            - closing
+            - open
+            - opening
+            - stopped
+            - transition
+            - unknown
+        open:
+          type: string
+        close:
+          type: string
+        last_updated:
+          type: string
+          format: DateTime
+        passthrough_interval:
+          type: string
+        door_ajar_interval:
+          type: string
+        invalid_credential_window:
+          type: string
+        invalid_shutout_period:
+          type: string
+        is_unattended_open_allowed:
+          type: boolean
+        is_unattended_close_allowed:
+          type: boolean
+        aux_relay_delay:
+          type: string
+        use_aux_relay:
+          type: boolean
+        aux_relay_behavior:
+          type: string
+        rex_fires_door:
+          type: boolean
+        command_channel_report_status:
+          type: boolean
+        control_from_browser:
+          type: boolean
+        report_forced:
+          type: boolean
+        report_ajar:
+          type: boolean
+        max_invalid_attempts:
+          type: number
+        online:
+          type: boolean
+        last_status:
+          type: string
+          format: DateTime
+          
+    Address:
+      type: object
+      properties:
+        PostalCode:
+          type: string
+        Country:
+          $ref: '#/components/schemas/Country'
+    Country:
+      type: object
+      properties:
+        Code:
+          type: string
+        Name:
+          type: string
+        IsEEACountry:
+          type: boolean
+        href:
+          type: string
